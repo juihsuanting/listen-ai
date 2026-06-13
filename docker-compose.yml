@@ -1,3 +1,43 @@
+# version: '3.8'
+
+# services:
+#   stat:
+#     build: ./stat
+#     ports:
+#       - "8002:8002"
+#     networks:
+#       - listenai-network
+
+#   nlp:
+#     build: ./nlp
+#     ports:
+#       - "8001:8001"
+#     networks:
+#       - listenai-network
+
+#   gateway:
+#     build: ./gateway
+#     ports:
+#       - "8000:8000"
+#     depends_on:
+#       - stat
+#       - nlp
+#     networks:
+#       - listenai-network
+
+#   frontend:
+#     build: ./frontend
+#     ports:
+#       - "8501:8501"
+#     depends_on:
+#       - gateway
+#     networks:
+#       - listenai-network
+
+# networks:
+#   listenai-network:
+#     driver: bridge
+
 version: '3.8'
 
 services:
@@ -5,6 +45,10 @@ services:
     build: ./stat
     ports:
       - "8002:8002"
+    environment:
+      - SQLITE_PATH=/app/data/listenai.db
+    volumes:
+      - listenai-db-data:/app/data
     networks:
       - listenai-network
 
@@ -22,6 +66,11 @@ services:
     depends_on:
       - stat
       - nlp
+    environment:
+      - STAT_URL=http://stat:8002
+      - NLP_URL=http://nlp:8001
+    volumes:
+      - listenai-db-data:/app/data
     networks:
       - listenai-network
 
@@ -31,9 +80,15 @@ services:
       - "8501:8501"
     depends_on:
       - gateway
+    environment:
+      - GATEWAY_URL=http://gateway:8000
     networks:
       - listenai-network
 
 networks:
   listenai-network:
     driver: bridge
+
+# 宣告具名的 Volume
+volumes:
+  listenai-db-data:
